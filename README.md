@@ -38,8 +38,8 @@ This project is a real-time video analysis tool designed to detect violent incid
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/username/RealTimeViolenceSafetyDetection.git
-cd RealTimeViolenceSafetyDetection
+git clone https://github.com/GauravPatil-Dev/SafeVision_Backend.git
+cd SafeVision_Backend
 ```
 
 ### Set Up the Virtual Environment
@@ -120,7 +120,7 @@ yolo_model = torch.hub.load("path/to/yolov5", "custom", path="path/to/weights/be
 ## Project Structure
 
 ```bash
-RealTimeViolenceSafetyDetection/
+SafeVision_Backend/
 │
 ├── main.py                   # Main application file
 ├── extractor.py             # Model feature extraction logic
