@@ -54,7 +54,21 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 ```bash
 pip install -r requirements.txt
 ```
+### Configure the Config File
+```bash
+Before running the application, update the config.py file to include the appropriate paths and settings for your environment. Replace placeholders with actual paths or values:
+YOLO_MODEL_PATH = "<YOLO_MODEL_DIRECTORY>/yolov5"
+YOLO_WEIGHTS_PATH = "<YOLO_MODEL_DIRECTORY>/yolov5/runs/train/exp/weights/best.pt"
 
+LSTM_MODEL_PATH = "<LSTM_MODEL_DIRECTORY>/Checkpoints/lstm-features-final.keras"
+
+SAMPLE_VIDEO_DIR = "<OUTPUT_DIRECTORY>/sample_videos/"
+EXTRACTED_FRAMES_DIR = "<OUTPUT_DIRECTORY>/extracted_frames/"
+VIOLENCE_FRAMES_DIR = "<OUTPUT_DIRECTORY>/violence_frames/"
+VIOLATION_FRAMES_DIR = "<OUTPUT_DIRECTORY>/violation_frames/"
+
+Ensure that these paths exist and the models are downloaded before proceeding.
+```
 ### YOLOv5 Setup
 
 Ensure YOLOv5 is set up with the correct model weights in the specified path.
@@ -66,7 +80,7 @@ yolo_model = torch.hub.load("/path/to/yolov5", "custom", path="path/to/yolov5/ru
 ### Start the Application
 
 ```bash
-flask run
+python main.py
 ```
 
 ---
@@ -198,9 +212,10 @@ To prevent redundant alerts and frame storage, the application uses a cooldown m
 ## Contributors
 
 - **[Gaurav Patil]** - Developer
-- **[Manish Reddy]** - Developer
-- **[Pratima Yadav]** - Developer
-- **[Shubham Das]** - Developer
+- **[Azhaa Manzhoor]** - Developer
+- **[Haseeb ]** - Developer
+- **[Rafay Danish]** - Developer
+- **[Ali Zahir]** - Developer
 
 ---
 

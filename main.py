@@ -31,6 +31,7 @@ from threading import Lock
 from flask_cors import CORS
 import logging
 import warnings
+import config
 # Locks for thread safety
 violence_lock = Lock()
 violation_lock = Lock()
@@ -47,7 +48,7 @@ logging.getLogger("torch").setLevel(logging.ERROR)
 warnings.filterwarnings("ignore", category=FutureWarning, message=r".*torch.cuda.amp.autocast.*")
 
 # Load custom YOLOv5 model
-yolo_model = torch.hub.load("/home/gaurav/Grainger_Dataset/yolo/unified_data/yolov5", "custom", path="/home/gaurav/Grainger_Dataset/yolo/unified_data/yolov5/runs/train/exp/weights/best.pt", source="local")
+yolo_model = torch.hub.load(config.YOLO_MODEL_PATH, "custom", path=config.YOLO_WEIGHTS_PATH, source="local")
 
 '''
 app = Flask(__name__)
@@ -66,7 +67,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 K.clear_session()
 
 inception = Extractor()
-saved_model = "/home/gaurav/RealTimeViolenceDetection/data/Checkpoints/lstm-features-final.keras"
+saved_model = config.LSTM_MODEL_PATH
 model = load_model(saved_model)
 
 # Global variables for frame buffer and processing
@@ -96,7 +97,7 @@ def analyze():
     seq_length = 40
 
     fname_ext = request.form["video"]
-    file_path = "/home/gaurav/RealTimeViolenceDetection/static/sample_videos/" + fname_ext 
+    file_path = config.SAMPLE_VIDEO_DIR + fname_ext 
     fname = fname_ext.split('.')[0]
     print("File path: ", fname_ext)
     print("File path: ", file_path)
@@ -108,11 +109,11 @@ def analyze():
 
     #call(["ffmpeg", "-i", file_path, "-r", str(seq_length),
     #      os.path.join('static/extracted_frames', fname + '-%04d.jpg')])
-    call(["ffmpeg", "-i", file_path, "-r", str(seq_length), "-pix_fmt", "yuv420p", os.path.join('/home/gaurav/RealTimeViolenceDetection/static/extracted_frames', fname + '-%04d.jpg')])
+    call(["ffmpeg", "-i", file_path, "-r", str(seq_length), "-pix_fmt", "yuv420p", os.path.join(config.EXTRACTED_FRAMES_DIR, fname + '-%04d.jpg')])
 
 
     frame_paths = sorted(glob.glob(os.path.join(
-        '/home/gaurav/RealTimeViolenceDetection/static/extracted_frames', fname + '*jpg')))
+        config.EXTRACTED_FRAMES_DIR, fname + '*jpg')))
 
 
     nframes = len(frame_paths)-(len(frame_paths) % seq_length)
@@ -157,7 +158,7 @@ def analyze():
             cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
         # Save YOLO-annotated frame
-        cv2.imwrite(os.path.join('/home/gaurav/RealTimeViolenceDetection/static/yolo_frames', f"{fname}-yolo-{i:04d}.jpg"), frame)
+        cv2.imwrite(os.path.join(config.YOLO_FRAMES_DIR, f"{fname}-yolo-{i:04d}.jpg"), frame)
 
 
         if i % seq_length == 0 and i + seq_length <= len(frames):
@@ -191,13 +192,13 @@ def analyze():
     plt.title('Violence in video')
     plt.ylim(0, 1)
     plt.legend() 
-    plt.savefig('/home/gaurav/RealTimeViolenceDetection/static/plots/' + fname + '.png')
+    plt.savefig(config.PLOTS_DIR + fname + '.png')
     plt.close()
 
     if(avg_violence_score>=0.85):
         #msg = Message("Violence Detected", sender="hellomaneeshp@gmail.com", recipients=["__recipient__email"])
         #msg.html = "<h3>Real Time Violence Detection System Alert</h3>"
-        with app.open_resource("/home/gaurav/RealTimeViolenceDetection/static/plots/" + fname + ".png") as fp:
+        with app.open_resource(config.PLOTS_DIR + fname + ".png") as fp:
             #msg.attach("violence_score_plot.png", "image/png", fp.read())
             for i in range(start_frame_pos+1,end_frame_pos+1):
                 if(i < 10):
@@ -225,7 +226,7 @@ def start_stream():
     fname = 'live' + ''.join(random.choice(chars) for x in range(size))
     print("The generated random file name : " + str(fname))
 
-    video_path = f'/home/gaurav/RealTimeViolenceDetection/static/live_videos/{fname}.mp4'
+    video_path = f'{config.VIOLENCE_FRAMES_DIR}/{fname}.mp4'
     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mp4v'), 40.0, (640,480))
 
     is_capturing = True
@@ -358,7 +359,7 @@ def save_violence_frames():
     # Directory to save violent incident frames
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
-    incident_dir = os.path.join('/home/gaurav/RealTimeViolenceDetection/static/violence_frames', datetime.now().strftime('%Y%m%d%H%M%S'))
+    incident_dir = os.path.join(config.VIOLENCE_FRAMES_DIR, datetime.now().strftime('%Y%m%d%H%M%S'))
     os.makedirs(incident_dir, exist_ok=True)
 
     # Convert buffer to list to access frames by index
@@ -472,7 +473,7 @@ def save_violation_frames():
     # Directory to save violation frames
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
 
-    violation_dir = os.path.join('/home/gaurav/RealTimeViolenceDetection/static/violation_frames', datetime.now().strftime('%Y%m%d%H%M%S'))
+    violation_dir = os.path.join(config.VIOLATION_FRAMES_DIR, datetime.now().strftime('%Y%m%d%H%M%S'))
     os.makedirs(violation_dir, exist_ok=True)
 
     # Convert buffer to list
@@ -528,7 +529,7 @@ def yolo_processing():
             #violation_frame_buffer.append(frame.copy())  # Add frame to buffer
             
             timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-            violation_dir = os.path.join('/home/gaurav/RealTimeViolenceDetection/static/violation_frames', timestamp)
+            violation_dir = os.path.join(config.VIOLATION_FRAMES_DIR, timestamp)
             os.makedirs(violation_dir, exist_ok=True)
 
 
